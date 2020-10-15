@@ -12,6 +12,14 @@ locals {
   k8s_cluster_name = "ms-cluster"
 }
 
+provider "aws" {
+  region = local.aws_region
+}
+
+data "aws_eks_cluster" "msur" {
+  name = module.aws-kubernetes-cluster.eks_cluster_id
+}
+
 # Network Configuration
 module "aws-network" {
   source = "github.com/avator00/module-aws-network"
@@ -44,4 +52,18 @@ module "aws-kubernetes-cluster" {
   nodegroup_desired_size   = 1
   nodegroup_min_size       = 1
   nodegroup_max_size       = 5
+}
+
+# GitOps Configuration
+module "argo-cd-server" {
+  source = "github.com/avator00/module-argo-cd"
+
+  aws_region            = local.aws_region
+  kubernetes_cluster_id = data.aws_eks_cluster.msur.id
+
+  kubernetes_cluster_name      = module.aws-kubernetes-cluster.eks_cluster_name
+  kubernetes_cluster_cert_data = module.aws-kubernetes-cluster.eks_cluster_certificate_data
+  kubernetes_cluster_endpoint  = module.aws-kubernetes-cluster.eks_cluster_endpoint
+
+  eks_nodegroup_id = module.aws-kubernetes-cluster.eks_cluster_nodegroup_id
 }
