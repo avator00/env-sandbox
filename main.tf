@@ -12,11 +12,6 @@ locals {
   k8s_cluster_name = "ms-cluster"
 }
 
-variable "mysql_password" {
-  type        = string
-  description = "Expected to be retrieved from environment variable TF_VAR_mysql_password"
-}
-
 provider "aws" {
   region = local.aws_region
 }
